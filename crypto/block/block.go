@@ -74,7 +74,7 @@ func (b *Block) GenerateHash() (string, error) {
 
 	_, err := hash.Write([]byte(blockID))
 	if err != nil {
-		return "", fmt.Errorf("unable to construct hmac512 hashed block id")
+		return "", fmt.Errorf("unable to construct sha512 hashed block id")
 	}
 
 	return fmt.Sprintf("%x", hash.Sum(nil)), nil

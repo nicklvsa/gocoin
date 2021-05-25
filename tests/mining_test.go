@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestMining(t *testing.T) {
 	blockchain, err := chain.New()
 	if err != nil {
