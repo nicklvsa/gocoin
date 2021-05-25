@@ -8,7 +8,7 @@ import (
 type Block struct {
 	Idx          uint64                     `json:"index"`
 	Hash         string                     `json:"hash"`
-	Nonse int `json:"nonse"`
+	Nonse        int                        `json:"nonse"`
 	PreviousHash *string                    `json:"previous_hash"`
 	Transactions []*transaction.Transaction `json:"transactions"`
 	CreatedAt    time.Time                  `json:"created_at"`
