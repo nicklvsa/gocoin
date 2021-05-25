@@ -6,6 +6,8 @@ import (
 	"gocoin/crypto/transaction"
 	"gocoin/crypto/user"
 	"time"
+
+	"github.com/gofrs/uuid"
 )
 
 func makeRandomTransactions(amount int) ([]*transaction.Transaction, error) {
@@ -15,7 +17,7 @@ func makeRandomTransactions(amount int) ([]*transaction.Transaction, error) {
 		transact, err := transaction.New(
 			makeUser("recipient", i),
 			makeUser("sender", i+1),
-			uint64((i + 1) * 2),
+			uint64((i+1)*2),
 		)
 		if err != nil {
 			return nil, err
@@ -41,9 +43,11 @@ func makeUser(role string, idx int) *user.User {
 		email = fmt.Sprintf("user@user%d.com", idx)
 	}
 
+	userUUID, _ := uuid.NewV4()
+
 	return &user.User{
-		Email: email,
-		Key:   fmt.Sprintf("some-key-%d", idx),
+		Email:  email,
+		UserID: userUUID,
 	}
 }
 
