@@ -1,6 +1,8 @@
 package user
 
+import "github.com/gofrs/uuid"
+
 type User struct {
-	Email string `json:"email"`
-	Key   string `json:"key"`
+	UserID uuid.UUID
+	Email  string `json:"email"`
 }
