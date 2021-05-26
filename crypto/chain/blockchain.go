@@ -23,7 +23,7 @@ func New() (*Blockchain, error) {
 	c := Blockchain{
 		PendingTransactions: []*transaction.Transaction{},
 		Chain:               []*block.Block{},
-		Difficulty:          15,
+		Difficulty:          2,
 		MinerReward:         50.0,
 		BlockSize:           50,
 	}

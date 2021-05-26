@@ -1,0 +1,67 @@
+version: '3.7'
+
+services:
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - gocoinapi
+    volumes:
+      - redis-data:/data
+    command: ["redis-server"]
+
+  db:
+    image: kartoza/postgis:11.0-2.5
+    environment:
+      ALLOW_IP_RANGE: '0.0.0.0/0'
+      POSTGRES_USER: postgres
+      POSTGRES_PASS: postgres
+      POSTGRES_DBNAME: gocoinapi-dev
+    ports:
+      - "5532:5432"
+    networks:
+      - gocoinapi
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - gocoinapi
+      
+  gocoinapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    depends_on: 
+      - db
+      - redis
+      - rabbitmq
+    working_dir: /go/gocoinapi
+    networks:
+      - gocoinapi
+    env_file:
+      - env.conf
+    volumes:
+      - ./:/go/gocoinapi
+    ports:
+      - 8080:8080
+    command: /go/gocoinapi/scripts/wait.sh db:5432 -- /bin/sh -c "go run main.go"
+
+networks:
+    gocoinapi:
+      name: gocoinapi
+
+volumes:
+  db-data:
+    driver: local
+  redis-data:
