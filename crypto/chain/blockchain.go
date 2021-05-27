@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -157,11 +158,13 @@ func (c *Blockchain) NewNode(address string) error {
 	return nil
 }
 
-func (c *Blockchain) ResolveSourceOfTruth() {
-	currentMax := len(c.Chain)
-	resp := make(chan NodeResponse)
+func (c *Blockchain) ResolveSourceOfTruth() bool {
+	bcCopy := *c
 
-	fetchNode := func(node *Node, response chan<- NodeResponse) {
+	resp := make(chan []*block.Block)
+
+	fetchNode := func(node *Node, wg *sync.WaitGroup, response chan<- []*block.Block) {
+		defer wg.Done()
 		client := http.Client{}
 
 		body := map[string]interface{}{
@@ -195,26 +198,32 @@ func (c *Blockchain) ResolveSourceOfTruth() {
 			return
 		}
 
-		response <- nodeResp
+		response <- nodeResp.Chain
 	}
 
+	var wg sync.WaitGroup
+
 	for _, node := range c.Nodes {
-		go fetchNode(node, resp)
+		wg.Add(1)
+		go fetchNode(node, &wg, resp)
 	}
 
 	go func(chain *Blockchain) {
 		for {
 			select {
-			case data := <-resp:
-				if data.Chain != nil {
-					if len(data.Chain) > currentMax && c.IsValid() {
-						currentMax = len(data.Chain)
-						chain.Chain = data.Chain
+			case blocks := <-resp:
+				if blocks != nil {
+					if len(blocks) > len(chain.Chain) && c.IsValid() {
+						chain.Chain = blocks
 					}
 				}
 			}
 		}
 	}(c)
+
+	wg.Wait()
+
+	return len(bcCopy.Chain) < len(c.Chain)
 }
 
 func (c *Blockchain) IsValid() bool {
