@@ -10,6 +10,7 @@ import (
 	"gocoin/crypto/block"
 	"gocoin/crypto/transaction"
 	"gocoin/crypto/user"
+	"gocoin/memauth"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -21,7 +22,9 @@ import (
 )
 
 func New() (*Blockchain, error) {
+
 	c := Blockchain{
+		Auth:                memauth.New(),
 		PendingTransactions: []*transaction.Transaction{},
 		Chain:               []*block.Block{},
 		Difficulty:          2,
